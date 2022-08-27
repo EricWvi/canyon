@@ -1,20 +1,35 @@
-#![no_std] // don't link the Rust standard library
-#![no_main] // disable all Rust-level entry points
+#![no_std]
+#![no_main]
+#![feature(alloc_error_handler)]
 
+extern crate alloc;
+
+mod allocator;
+mod logger;
+
+use crate::logger::init_logger;
+use bootloader_lib::BootInfo;
 use core::arch::asm;
 use core::panic::PanicInfo;
-use bootloader::BootInfo;
+use log::{debug, error, info};
 
-/// This function is called on panic.
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+fn panic(info: &PanicInfo) -> ! {
+    error!("{}", info);
+    unsafe {
+        loop {
+            asm!("nop");
+        }
+    }
 }
-
-static HELLO: &[u8] = b"Hello, World!";
 
 #[no_mangle]
-pub extern "C" fn _start(boot_info: &'static BootInfo) -> i32 {
-    12345
-}
+pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+    init_logger(boot_info.graphic_info);
 
+    unsafe {
+        loop {
+            asm!("nop");
+        }
+    }
+}

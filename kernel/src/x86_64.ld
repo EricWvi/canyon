@@ -5,21 +5,23 @@ SECTIONS
 {
     . = BASE_ADDRESS;
     .text : {
-        *(.text .text.*)
+        *(.text*)
     }
     . = ALIGN(4K);
     .rodata : {
-        *(.rodata .rodata.*)
+        *(.rodata*)
     }
     . = ALIGN(4K);
     .data : {
-        *(.data .data.*)
+        *(.got*)
+        *(.data*)
     }
+    . = ALIGN(4K);
     .bss : {
-        *(.bss .bss.*)
+        *(.bss*)
     }
+    . = ALIGN(4K);
     /DISCARD/ : {
-        *(.eh_frame)
-        *(.debug*)
+        *(.eh_frame*)
     }
 }
