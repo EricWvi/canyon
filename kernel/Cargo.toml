@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 bootloader-lib = { path="../bootloader" }
 log = "0.4.17"
-moveslice = "2.0.1"
 noto-sans-mono-bitmap = "0.1.5"
 spin = "0.9.4"
 uefi = "0.16.0"

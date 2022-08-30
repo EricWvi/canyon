@@ -11,7 +11,7 @@ use crate::logger::init_logger;
 use bootloader_lib::BootInfo;
 use core::arch::asm;
 use core::panic::PanicInfo;
-use log::{debug, error, info};
+use log::{debug, error, info, trace, warn};
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -26,6 +26,8 @@ fn panic(info: &PanicInfo) -> ! {
 #[no_mangle]
 pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
     init_logger(boot_info.graphic_info);
+    info!("enter kernel");
+    info!("logger initialized");
 
     unsafe {
         loop {
