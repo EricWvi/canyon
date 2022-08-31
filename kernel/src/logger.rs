@@ -5,11 +5,18 @@ use core::{fmt, ptr};
 use log::{error, Level};
 use noto_sans_mono_bitmap::{get_bitmap, BitmapChar, BitmapHeight, FontWeight};
 use spin::Mutex;
+use uart_16550::SerialPort;
 use uefi::proto::console::gop::PixelFormat;
 
 pub static mut LOGGER: Option<LockedLogger> = None;
+#[cfg(feature = "qemu")]
+static mut PORT: SerialPort = unsafe { SerialPort::new(0x3F8) };
 
-pub fn init_logger(info: GraphicInfo) {
+pub fn init(info: GraphicInfo) {
+    #[cfg(feature = "qemu")]
+    unsafe {
+        PORT.init();
+    }
     let logger = unsafe {
         LOGGER = Some(LockedLogger::new(info));
         LOGGER.as_ref().unwrap()
@@ -135,6 +142,10 @@ impl Logger {
         for i in 0..self.framebuffer.len() {
             self.framebuffer[i] = background[i % 4];
         }
+        #[cfg(feature = "qemu")]
+        unsafe {
+            PORT.send(b'\n');
+        }
     }
 
     #[inline]
@@ -173,6 +184,10 @@ impl Logger {
     }
 
     fn write_char(&mut self, c: char) {
+        #[cfg(feature = "qemu")]
+        unsafe {
+            PORT.write_char(c);
+        }
         match c {
             '\n' => self.newline(),
             '\r' => self.carriage_return(),
