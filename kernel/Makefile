@@ -59,12 +59,12 @@ bootloader: filesystem $(ESP)/EFI/Boot/boot.conf $(ESP)/EFI/Boot/BootX64.efi
 $(ESP)/EFI/canyon/kernel.elf: $(build_path)/canyon-os
 	cp $< $@
 
-$(build_path)/canyon-os: src/*
+$(build_path)/canyon-os: $(shell find src -type f)
 	cargo build $(build_args)
 	rust-objcopy --only-keep-debug $@ $@.sym
 	rust-objcopy --strip-debug $@
 
-$(ESP)/EFI/Boot/BootX64.efi: $(bootloader)/src/*
+$(ESP)/EFI/Boot/BootX64.efi: $(shell find ../bootloader/src -type f)
 	cd $(bootloader); cargo build
 	cp $(bootloader)/target/x86_64-unknown-uefi/debug/bootloader.efi $@
 

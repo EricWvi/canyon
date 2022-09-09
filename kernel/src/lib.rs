@@ -15,6 +15,7 @@ pub mod arch;
 pub use crate::arch::*;
 
 mod logger;
+pub mod memory;
 mod process;
 #[cfg(feature = "qemu")]
 pub mod testing;
@@ -64,6 +65,10 @@ pub fn init(boot_info: &'static BootInfo) {
     info!("enter kernel");
     info!("logger initialized");
 
+    // ! The order cannot be changed.
+    memory::init(boot_info.physical_memory_offset);
     gdt::init();
     idt::init();
+    apic::init();
+    x86_64::instructions::interrupts::enable();
 }

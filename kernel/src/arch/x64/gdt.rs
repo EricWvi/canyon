@@ -1,5 +1,5 @@
 use alloc::vec::Vec;
-use x86_64::instructions::segmentation::{Segment, CS};
+use x86_64::instructions::segmentation::{Segment, CS, SS};
 use x86_64::instructions::tables::load_tss;
 use x86_64::structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector};
 use x86_64::structures::tss::TaskStateSegment;
@@ -30,11 +30,8 @@ pub fn init() {
     gdt.load();
     unsafe {
         CS::set_reg(code_selector);
+        // set ss in that there is always a double fault when handler return
+        SS::set_reg(SegmentSelector { 0: 0 });
         load_tss(tss_selector);
     }
-}
-
-struct Selectors {
-    code_selector: SegmentSelector,
-    tss_selector: SegmentSelector,
 }
