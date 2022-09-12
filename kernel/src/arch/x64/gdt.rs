@@ -11,6 +11,8 @@ static mut GDT: Option<GlobalDescriptorTable> = None;
 static mut TSS: Option<TaskStateSegment> = None;
 
 pub fn init() {
+    // To prevent triple faults in all cases, we also set up an Interrupt Stack Table
+    // to catch double faults on a separate kernel stack.
     let mut tss = unsafe {
         TSS = Some(TaskStateSegment::new());
         TSS.as_mut().unwrap()

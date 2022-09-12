@@ -1,7 +1,9 @@
-use crate::apic::LAPIC;
 use crate::gdt;
+use crate::interrupt::apic::{IOAPIC, LAPIC};
+use crate::interrupt::InterruptIndex;
 use crate::logger::LOGGER;
-use log::error;
+use crate::memory::to_virt_addr;
+use log::{error, info};
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 
 static mut IDT: Option<InterruptDescriptorTable> = None;
@@ -47,11 +49,10 @@ pub fn init() {
     idt.security_exception
         .set_handler_fn(security_exception_handler);
 
-    idt[crate::interrupt::InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
-    idt[33].set_handler_fn(breakpoint_handler);
-    idt[34].set_handler_fn(breakpoint_handler);
-    // To prevent triple faults in all cases, we also set up an Interrupt Stack Table
-    // to catch double faults on a separate kernel stack.
+    idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);
+    idt[InterruptIndex::Keyboard.as_usize()].set_handler_fn(keyboard_interrupt_handler);
+    idt[InterruptIndex::Error.as_usize()].set_handler_fn(apic_error_handler);
+    idt[InterruptIndex::Spurious.as_usize()].set_handler_fn(spurious_interrupt_handler);
 
     // TODO A guard page is a special memory page at the bottom of a stack that
     //      makes it possible to detect stack overflows. The page is not
@@ -182,8 +183,28 @@ extern "x86-interrupt" fn security_exception_handler(
     error!("error_code: {:#?}", error_code);
 }
 
+extern "x86-interrupt" fn apic_error_handler(stack_frame: InterruptStackFrame) {
+    error!("EXCEPTION: APIC_ERROR\n{:#?}", stack_frame);
+}
+
+extern "x86-interrupt" fn spurious_interrupt_handler(stack_frame: InterruptStackFrame) {
+    error!("EXCEPTION: SPURIOUS_INTERRUPT\n{:#?}", stack_frame);
+}
+
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
     // error!("EXCEPTION: TIMER_INTERRUPT");
+    unsafe {
+        let mut lapic = LAPIC.as_mut().unwrap().lock();
+        lapic.end_of_interrupt();
+    }
+}
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
+    use x86_64::instructions::port::Port;
+
+    let mut port = Port::new(0x60);
+    let scancode: u8 = unsafe { port.read() };
+    // info!("{}", scancode);
     unsafe {
         let mut lapic = LAPIC.as_mut().unwrap().lock();
         lapic.end_of_interrupt();

@@ -25,6 +25,8 @@ ifeq ($(Graphic), off)
 qemu_opts += -nographic
 endif
 
+# -monitor tcp:127.0.0.1:4444
+
 define KERNEL_TEST_RUNNER
 #!/usr/local/bin/bash
 

@@ -9,6 +9,7 @@ use uart_16550::SerialPort;
 use uefi::proto::console::gop::PixelFormat;
 
 pub static mut LOGGER: Option<LockedLogger> = None;
+// TODO move to `drivers`
 #[cfg(feature = "qemu")]
 static mut PORT: SerialPort = unsafe { SerialPort::new(0x3F8) };
 

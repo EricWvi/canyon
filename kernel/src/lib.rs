@@ -68,7 +68,7 @@ pub fn init(boot_info: &'static BootInfo) {
     // ! The order cannot be changed.
     memory::init(boot_info.physical_memory_offset);
     gdt::init();
-    idt::init();
-    apic::init();
+    interrupt::idt::init();
+    interrupt::apic::init();
     x86_64::instructions::interrupts::enable();
 }
