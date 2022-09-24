@@ -1,5 +1,5 @@
 [build]
-target = "targets/x86_64.json"
+#target = "targets/x86_64.json"
 rustflags = [
     "-Clink-arg=-Tsrc/x86_64.ld"
 ]

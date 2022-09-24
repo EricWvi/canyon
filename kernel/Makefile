@@ -4,7 +4,7 @@ qemu := qemu-system-$(ARCH)
 target := $(ARCH)
 build_path := target/$(target)/$(MODE)
 ESP := $(build_path)/esp
-bootloader := ../bootloader
+bootloader := ../bootloader/efi
 OVMF := $(bootloader)/OVMF.fd
 
 qemu_opts := -drive if=pflash,format=raw,readonly,file=$(OVMF) \
@@ -45,7 +45,7 @@ export KERNEL_TEST_RUNNER
 
 FEATURES = qemu
 
-build_args := --features "$(FEATURES)"
+build_args := --features "$(FEATURES)" --target targets/$(ARCH).json
 
 run: bootloader kernel
 	$(qemu) $(qemu_opts)

@@ -1,8 +1,10 @@
+use alloc::vec::Vec;
+use uefi::table::boot::MemoryDescriptor;
 use x86_64::{PhysAddr, VirtAddr};
 
 static mut PHYSICAL_MEMORY_OFFSET: Option<u64> = None;
 
-pub fn init(offset: u64) {
+pub fn init(offset: u64, descriptors: &Vec<&MemoryDescriptor>) {
     unsafe {
         PHYSICAL_MEMORY_OFFSET = Some(offset);
     }

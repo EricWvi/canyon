@@ -21,7 +21,6 @@ mod process;
 pub mod testing;
 
 use bootloader_lib::BootInfo;
-use core::arch::asm;
 use core::panic::PanicInfo;
 use log::{error, info};
 
@@ -29,11 +28,7 @@ use log::{error, info};
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     error!("{}", info);
-    unsafe {
-        loop {
-            asm!("nop");
-        }
-    }
+    x86_64::instructions::hlt()
 }
 
 #[cfg(test)]
@@ -49,24 +44,21 @@ fn panic(info: &PanicInfo) -> ! {
 /// Entry point for `cargo test`
 #[cfg(test)]
 #[no_mangle]
-pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     init(boot_info);
 
     test_main();
-    unsafe {
-        loop {
-            asm!("nop");
-        }
-    }
+
+    x86_64::instructions::hlt()
 }
 
-pub fn init(boot_info: &'static BootInfo) {
+pub fn init(boot_info: &'static mut BootInfo) {
     logger::init(boot_info.graphic_info);
     info!("enter kernel");
-    info!("logger initialized");
+    info!("logger initialized\n");
 
     // ! The order cannot be changed.
-    memory::init(boot_info.physical_memory_offset);
+    memory::init(boot_info.physical_memory_offset, &boot_info.memory_map);
     gdt::init();
     interrupt::idt::init();
     interrupt::apic::init();

@@ -6,18 +6,13 @@
 
 use bootloader_lib::BootInfo;
 use canyon::*;
-use core::arch::asm;
 
 #[no_mangle]
-pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     init(boot_info);
 
     test_main();
-    unsafe {
-        loop {
-            asm!("nop");
-        }
-    }
+    x86_64::instructions::hlt()
 }
 
 #[test_case]
