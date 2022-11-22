@@ -9,5 +9,6 @@ use log::{debug, info};
 pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     init(boot_info);
 
-    x86_64::instructions::hlt()
+    x86_64::instructions::hlt();
+    loop {}
 }

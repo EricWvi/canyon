@@ -194,6 +194,7 @@ extern "x86-interrupt" fn spurious_interrupt_handler(stack_frame: InterruptStack
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
     // error!("EXCEPTION: TIMER_INTERRUPT");
     unsafe {
+        LAPIC.as_ref().unwrap().force_unlock();
         let mut lapic = LAPIC.as_mut().unwrap().lock();
         lapic.end_of_interrupt();
     }
@@ -213,12 +214,27 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
 
 #[cfg(test)]
 mod test {
+    use crate::interrupt::apic::LAPIC;
     use crate::testing::*;
-    use log::info;
+    use core::arch::x86_64::{__cpuid, _rdtsc};
+    use log::{debug, info};
 
     #[test_case]
     fn test_breakpoint() {
         x86_64::instructions::interrupts::int3();
         info!("after int3");
+    }
+
+    #[test_case]
+    fn test_timer() {
+        unsafe {
+            let mut lapic = LAPIC.as_mut().unwrap().lock();
+            let a = lapic.timer_current();
+            let b = _rdtsc();
+            debug!("{} {}", a, b);
+            let a = lapic.timer_current();
+            let b = _rdtsc();
+            debug!("{} {}", a, b);
+        }
     }
 }

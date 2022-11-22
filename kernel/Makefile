@@ -28,7 +28,7 @@ endif
 # -monitor tcp:127.0.0.1:4444
 
 define KERNEL_TEST_RUNNER
-#!/usr/local/bin/bash
+#!/bin/bash
 
 cp "$$1" target/x86_64/debug/esp/EFI/canyon/kernel.elf
 $(qemu) $(qemu_opts)
@@ -46,13 +46,15 @@ export KERNEL_TEST_RUNNER
 FEATURES = qemu
 
 build_args := --features "$(FEATURES)" --target targets/$(ARCH).json
+test_build_args := --lib $(Test) --features "$(FEATURES)" --target targets/$(ARCH).json
 
 run: bootloader kernel
 	$(qemu) $(qemu_opts)
 
 test: bootloader
+	echo "$$Test" > target/test-func
 	echo "$$KERNEL_TEST_RUNNER" > target/kernel_test_runner.sh
-	cargo test --lib $(build_args)
+	cargo test $(test_build_args)
 
 kernel: filesystem $(ESP)/EFI/canyon/kernel.elf
 

@@ -28,7 +28,8 @@ use log::{error, info};
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     error!("{}", info);
-    x86_64::instructions::hlt()
+    x86_64::instructions::hlt();
+    loop {}
 }
 
 #[cfg(test)]
@@ -49,7 +50,8 @@ pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
 
     test_main();
 
-    x86_64::instructions::hlt()
+    x86_64::instructions::hlt();
+    loop {}
 }
 
 pub fn init(boot_info: &'static mut BootInfo) {

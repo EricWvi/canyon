@@ -2,6 +2,7 @@ use log::info;
 
 pub trait Testable {
     fn run(&self) -> ();
+    fn name(&self) -> &'static str;
 }
 
 impl<T> Testable for T
@@ -13,19 +14,34 @@ where
         self();
         info!("[ok]")
     }
+
+    fn name(&self) -> &'static str {
+        core::any::type_name::<T>()
+    }
 }
 
 pub fn test_runner(tests: &[&dyn Testable]) {
+    let fn_name = include_str!("../target/test-func").trim();
     // TODO multi-thread
     // TODO should panic, unwinding after multi thread
     // https://os.phil-opp.com/freestanding-rust-binary/#the-eh-personality-language-item
     // https://www.reddit.com/r/rust/comments/phws7n/unwinding_vs_abortion_upon_panic/
     // https://github.com/dmoka/fluent-asserter
-    info!("Running {} tests", tests.len());
+    let mut origin = tests.iter();
+    let mut filter = tests.iter().filter(|t| t.name().contains(fn_name));
+
+    let tests: &mut dyn Iterator<Item = &&dyn Testable> = if fn_name.is_empty() {
+        info!("Running {} tests", origin.clone().count());
+        &mut origin
+    } else {
+        info!("Running {} tests", filter.clone().count());
+        &mut filter
+    };
+
     for test in tests {
         test.run();
     }
-    // info!("test result: ok.");
+    info!("test result: ok.");
     test_complete();
 }
 
