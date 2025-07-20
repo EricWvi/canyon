@@ -1,0 +1,2 @@
+run:
+	cd efi; make

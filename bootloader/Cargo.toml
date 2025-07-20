@@ -1,0 +1,10 @@
+[package]
+name = "bootloader-lib"
+version = "1.0.0"
+edition = "2021"
+
+[lib]
+name = "bootloader_lib"
+
+[dependencies]
+uefi = { version = "0.18.0"}

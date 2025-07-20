@@ -1,0 +1,12 @@
+[build]
+#target = "targets/x86_64.json"
+rustflags = [
+    "-Clink-arg=-Tsrc/x86_64.ld"
+]
+
+[target.'cfg(target_os = "none")']
+runner = "target/kernel_test_runner.sh"
+
+[unstable]
+build-std = ["core", "compiler_builtins", "alloc"]
+build-std-features = ["compiler-builtins-mem"]
